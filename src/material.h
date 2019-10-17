@@ -9,7 +9,7 @@
 
 class Material {
 public:
-
+	float time;
 	Shader* shader = NULL;
 	Texture* texture = NULL;
 	vec4 color;
@@ -37,6 +37,18 @@ public:
 	~WireframeMaterial();
 
 	void render(Mesh* mesh, Matrix44 model, Camera * camera);
+};
+
+class CloudMaterial : public Material {
+public:
+
+	CloudMaterial();
+	~CloudMaterial();
+
+	void setUniforms(Camera* camera, Matrix44 model);
+	void render(Mesh* mesh, Matrix44 model, Camera * camera);
+	void renderTime(Mesh* mesh, Matrix44 model, Camera * camera);
+	void renderInMenu();
 };
 
 #endif

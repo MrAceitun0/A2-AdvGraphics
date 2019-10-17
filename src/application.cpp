@@ -47,7 +47,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	// Set mesh and manipulate model matrix
 	//node->mesh = Mesh::Get("data/meshes/box.ASE.mbin");
 	Mesh * mesh = new Mesh();
-	mesh->createSubdividedPlane(50.0, 32, true);
+	mesh->createSubdividedPlane(50.0, 512, true);
 	node->mesh = mesh;
 	node->model.setScale(0.1, 0.1, 0.1);
 
@@ -57,11 +57,30 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	// Manipulate material
 	material->color = vec4(1.0, 0.0, 0.0, 1.0);
-	material->texture = Texture::Get("data/textures/heightmap2.tga");
+	material->texture = Texture::Get("data/textures/europe.tga");
 	/*
 	material->texture = Texture::Get("data/textures/texture.tga");
 	material->shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	*/
+
+	// Create scene node 
+	SceneNode * node_cloud = new SceneNode("Rendered node");
+	root.push_back(node_cloud);
+
+	// Set mesh and manipulate model matrix
+	//node->mesh = Mesh::Get("data/meshes/box.ASE.mbin");
+	Mesh * mesh_cloud = new Mesh();
+	mesh_cloud = Mesh::Get("data/meshes/cloud.obj");
+	node_cloud->mesh = mesh_cloud;
+	node_cloud->model.setScale(0.1, 0.1, 0.1);
+
+	// Create node material
+	CloudMaterial * material_cloud = new CloudMaterial();
+	node_cloud->material = material_cloud;
+	node_cloud->material->time = 0.0f;
+
+	// Manipulate material
+	material_cloud->color = vec4(1.0, 1.0, 1.0, 1.0);
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -71,7 +90,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 void Application::render(void)
 {
 	//set the clear color (the background color)
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(0.725, 0.886, 0.961, 1.0);
 
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -85,6 +104,7 @@ void Application::render(void)
 	glDisable(GL_CULL_FACE);
 
 	for (int i = 0; i < root.size(); i++) {
+		root[i]->material->time = time;
 		root[i]->render(camera);
 
 		if(render_wireframe)

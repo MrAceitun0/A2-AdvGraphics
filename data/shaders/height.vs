@@ -15,6 +15,8 @@ varying vec3 v_normal;
 varying vec2 v_uv;
 varying vec4 v_color;
 
+uniform sampler2D u_texture;
+
 void main()
 {	
 	//calcule the normal in camera space (the NormalMatrix is like ViewMatrix but without traslation)
@@ -29,7 +31,10 @@ void main()
 
 	//store the texture coordinates
 	v_uv = a_uv;
+	
+	vec4 color = texture2D( u_texture, v_uv);
+	float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
 
 	//calcule the position of the vertex using the matrices
-	gl_Position = u_viewprojection * vec4( v_world_position, 1.0 );
+	gl_Position = u_viewprojection * vec4(v_world_position.x, gray , v_world_position.z, 1.0 );
 }
