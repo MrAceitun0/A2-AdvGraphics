@@ -23,21 +23,22 @@ void main()
 {
     vec2 st = (gl_FragCoord.xy)/(u_resolution.xy);
     
-    st *= 10.0; // Scale the coordinate system by 10
+    st *= 100.0; // Scale the coordinate system by 10
     vec2 ipos = floor(st);  // get the integer coords
     vec2 fpos = fract(st);  // get the fractional coords
     
     // Assign a random value based on the integer coord
-    vec3 color = vec3(random( ipos ));
+    vec3 noise = vec3(random( ipos ));
+    vec3 newUV = v_position + 0.001 * (noise - 0.5);
 
-
-    vec3 current_sample = v_position;   //initial position
+    vec3 current_sample = newUV;   //initial position
 
     //Ray
-    vec3 step_vector = normalize(v_position - u_local_camera_position) * u_quality; //normalize the ray vector
+    vec3 step_vector = normalize(current_sample - u_local_camera_position) * u_quality; //normalize the ray vector
 
     //color accumulator
-    vec4 color_acc = vec4(0.0, 0.0, 0.0, 0.0) * vec4(color, 1.0);
+    vec4 color_acc = vec4(0.0, 0.0, 0.0, 0.0);
+
 
     //start loop
     while(1)
