@@ -119,8 +119,8 @@ public:
 	bool interleaveBuffers();
 
 private:
-	bool loadASE(const char* filename);
 	bool loadOBJ(const char* filename);
+	bool loadASE(const char* filename);
 	bool loadMESH(const char* filename); //personal format used for animations
 };
 

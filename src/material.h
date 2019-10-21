@@ -6,13 +6,19 @@
 #include "camera.h"
 #include "mesh.h"
 #include "extra/hdre.h"
+#include "volume.h"
 
 class Material {
 public:
-	float time;
+
 	Shader* shader = NULL;
 	Texture* texture = NULL;
+	Volume* volume = NULL;
 	vec4 color;
+	float time = 0.0f;
+	float brightness;
+	float quality = 0.01;
+	int index;
 
 	virtual void setUniforms(Camera* camera, Matrix44 model) = 0;
 	virtual void render(Mesh* mesh, Matrix44 model, Camera * camera) = 0;
@@ -39,16 +45,33 @@ public:
 	void render(Mesh* mesh, Matrix44 model, Camera * camera);
 };
 
+class VolumeMaterial : public Material {
+public:
+	VolumeMaterial();
+	~VolumeMaterial();
+
+	void setUniforms(Camera* camera, Matrix44 model);
+	void render(Mesh* mesh, Matrix44 model, Camera * camera);
+	void renderInMenu();
+};
+
 class CloudMaterial : public Material {
 public:
-
 	CloudMaterial();
 	~CloudMaterial();
 
 	void setUniforms(Camera* camera, Matrix44 model);
 	void render(Mesh* mesh, Matrix44 model, Camera * camera);
-	void renderTime(Mesh* mesh, Matrix44 model, Camera * camera);
 	void renderInMenu();
 };
 
+class HeightMapMaterial : public Material {
+public:
+	HeightMapMaterial();
+	~HeightMapMaterial();
+
+	void setUniforms(Camera* camera, Matrix44 model);
+	void render(Mesh* mesh, Matrix44 model, Camera * camera);
+	void renderInMenu();
+};
 #endif

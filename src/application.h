@@ -52,6 +52,8 @@ public:
 	void onGamepadButtonUp(SDL_JoyButtonEvent event);
 	void onResize(int width, int height);
 
+	//Change volumes
+	int volume_index = 1; 
 };
 
 
