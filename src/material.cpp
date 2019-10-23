@@ -115,6 +115,9 @@ void VolumeMaterial::setUniforms(Camera* camera, Matrix44 model)
 	{
 		shader->setUniform("u_texture", texture);	//texture
 	}
+
+	shader->setUniform("u_jittering", jittering);
+	shader->setUniform("u_gradient", gradient);
 }
 
 void VolumeMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
@@ -145,7 +148,18 @@ void VolumeMaterial::renderInMenu()
 CloudMaterial::CloudMaterial()
 {
 	color = vec4(1.f, 1.f, 1.f, 1.f);
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/cloud.fs");
+	shader = Shader::Get("data/shaders/phong.vs", "data/shaders/cloud.fs");
+
+	//Light (Using a Phong shader)
+	phong_light = new My_Light();
+
+	ambient = { 1.0, 1.0, 1.0 };
+	diffuse = { 1.0, 1.0, 1.0 };
+	specular = { 1.0, 1.0, 1.0 };
+	shininess = 50.0;
+
+	phong_light->position = { 0.0, -1000.0, 35.0 };
+	phong_light->specular_color = { 1.0, 0.0, 0.0 };
 }
 
 CloudMaterial::~CloudMaterial()
@@ -160,17 +174,7 @@ void CloudMaterial::setUniforms(Camera* camera, Matrix44 model)
 	shader->setUniform("u_camera_position", camera->eye);
 	shader->setUniform("u_model", model);
 
-	//Get the local camera position by multiplying the camera position by the inverse of the model and getting the homogeneous values
-	model.inverse();
-	Vector3 local_camera_position = vec3((model * vec4(camera->eye, 1.0)).x, (model * vec4(camera->eye, 1.0)).y, (model * vec4(camera->eye, 1.0)).z) * (1 / (model * vec4(camera->eye, 1.0)).w);
-
-	//passing the local camerea position and the color to the shader
-	shader->setUniform("u_local_camera_position", local_camera_position);
 	shader->setUniform("u_color", color);
-
-	//Extra uniforms
-	shader->setUniform("u_quality", quality);
-	shader->setUniform("u_brightness", brightness);
 
 	if (texture)
 	{
@@ -178,6 +182,23 @@ void CloudMaterial::setUniforms(Camera* camera, Matrix44 model)
 	}
 
 	shader->setUniform("u_time", time);
+
+	Matrix44 viewprojection = camera->viewprojection_matrix;
+
+	Matrix44 model_matrix;
+	model_matrix.setIdentity();
+	model_matrix.translate(0, 0, 0); //example of translation
+
+	shader->setMatrix44("model", model_matrix); //upload the transform matrix to the shader
+	shader->setMatrix44("viewprojection", viewprojection); //upload viewprojection info to the shader
+	shader->setVector3("u_camera_position", camera->eye);
+	shader->setVector3("ambient_light", phong_light->diffuse_color);
+	shader->setVector3("light_color", phong_light->specular_color);
+	shader->setVector3("light_pos", phong_light->position);
+	shader->setVector3("material_ambient", ambient);
+	shader->setVector3("material_diffuse", diffuse);
+	shader->setVector3("material_specular", specular);
+	shader->setFloat("material_gloss", shininess);
 }
 
 void CloudMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
@@ -201,13 +222,30 @@ void CloudMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 void CloudMaterial::renderInMenu()
 {
 	ImGui::ColorEdit3("Color", (float*)&color); // Edit 3 floats representing a color
+	
+	ImGui::ColorEdit3("Material Ambient", (float*)&ambient); // Edit 3 floats representing a color
+	ImGui::ColorEdit3("Material Diffuse", (float*)&diffuse); // Edit 3 floats representing a color
+	ImGui::ColorEdit3("Material Specular", (float*)&specular); // Edit 3 floats representing a color
+
+	ImGui::ColorEdit3("Light Diffuse", (float*)&phong_light->diffuse_color); // Edit 3 floats representing a color
+	ImGui::ColorEdit3("Light Specular", (float*)&phong_light->specular_color); // Edit 3 floats representing a color
+	ImGui::DragFloat3("Light Position", (float*)&phong_light->position); // Edit 3 floats representing a color
 }
 
 
 HeightMapMaterial::HeightMapMaterial()
 {
 	color = vec4(1.f, 1.f, 1.f, 1.f);
-	shader = Shader::Get("data/shaders/height.vs", "data/shaders/flat.fs");
+	shader = Shader::Get("data/shaders/height.vs", "data/shaders/texture.fs");
+
+	phong_light = new My_Light();
+
+	ambient = { 1.0, 1.0, 1.0 };
+	diffuse = { 1.0, 1.0, 1.0 };
+	specular = { 1.0, 1.0, 1.0 };
+	shininess = 50.0;
+
+	phong_light->diffuse_color = { 1.0, 1.0, 1.0 };
 }
 
 HeightMapMaterial::~HeightMapMaterial()
@@ -222,21 +260,16 @@ void HeightMapMaterial::setUniforms(Camera* camera, Matrix44 model)
 	shader->setUniform("u_camera_position", camera->eye);
 	shader->setUniform("u_model", model);
 
-	//Get the local camera position by multiplying the camera position by the inverse of the model and getting the homogeneous values
-	model.inverse();
-	Vector3 local_camera_position = vec3((model * vec4(camera->eye, 1.0)).x, (model * vec4(camera->eye, 1.0)).y, (model * vec4(camera->eye, 1.0)).z) * (1 / (model * vec4(camera->eye, 1.0)).w);
-
-	//passing the local camerea position and the color to the shader
-	shader->setUniform("u_local_camera_position", local_camera_position);
 	shader->setUniform("u_color", color);
-
-	//Extra uniforms
-	shader->setUniform("u_quality", quality);
-	shader->setUniform("u_brightness", brightness);
 
 	if (texture)
 	{
 		shader->setUniform("u_texture", texture);	//texture
+	}
+
+	if (beauty)
+	{
+		shader->setUniform("u_texture_beauty", beauty);	//texture
 	}
 }
 
@@ -260,5 +293,12 @@ void HeightMapMaterial::render(Mesh* mesh, Matrix44 model, Camera* camera)
 
 void HeightMapMaterial::renderInMenu()
 {
-	ImGui::ColorEdit3("Color", (float*)&color); // Edit 3 floats representing a color
+
+}
+
+My_Light::My_Light()
+{
+	position.set(50, 50, 0);
+	diffuse_color.set(1.0f, 1.0f, 1.0f);
+	specular_color.set(1.0f, 1.0f, 1.0f);
 }

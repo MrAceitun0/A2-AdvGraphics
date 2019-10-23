@@ -103,6 +103,8 @@ void renderDebug(SDL_Window* window, Application * game)
 		ImGui::Text(getGPUStats().c_str());					   // Display some text (you can use a format strings too)
 		
 		ImGui::Checkbox("Render Wireframe", &Application::instance->render_wireframe);
+		ImGui::Checkbox("Render Jittering", &Application::instance->render_jittering);
+		ImGui::Checkbox("Render Gradient", &Application::instance->render_gradient);
 
 		if (ImGui::TreeNode("Camera")) {
 			game->camera->renderInMenu();

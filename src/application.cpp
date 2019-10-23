@@ -24,6 +24,8 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	must_exit = false;
 	render_debug = true;
 	render_wireframe = false;
+	render_jittering = false;
+	render_gradient = false;
 
 	fps = 0;
 	frame = 0;
@@ -41,9 +43,9 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	camera->setPerspective(45.f, window_width / (float)window_height, 0.1f, 10000.f);
 
 	// Create 3 scene nodes
-	SceneNode * abdomen = new SceneNode("Rendered node 1");
-	SceneNode * orange = new SceneNode("Rendered node 2");
-	SceneNode * smoke = new SceneNode("Rendered node 3");
+	SceneNode * abdomen = new SceneNode("Rendered Abdomen");
+	SceneNode * orange = new SceneNode("Rendered Orange");
+	SceneNode * smoke = new SceneNode("Rendered Smoke");
 
 	// Create meshes from cubes for the 3 nodes
 	abdomen->mesh = new Mesh();
@@ -103,24 +105,26 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	//Full scene with map, clouds and light
 	//Map
-	SceneNode * map = new SceneNode("Rendered node");
+	SceneNode * map = new SceneNode("Rendered Menorca");
 	root.push_back(map);
 	Mesh * plane = new Mesh();
-	plane->createSubdividedPlane(50.0, 512, true);
+	plane->createSubdividedPlane(100.0, 512, true);
 	map->mesh = plane;
 	map->model.setScale(1, 1, 1);
 	HeightMapMaterial * map_material = new HeightMapMaterial();
-	map_material->color = vec4(1.0, 0.0, 0.0, 1.0);
-	map_material->texture = Texture::Get("data/textures/europe.tga");
+	//map_material->color = vec4(1.0, 0.0, 0.0, 1.0);
+	map_material->texture = Texture::Get("data/textures/Menorca_gray.tga");
+	map_material->beauty = Texture::Get("data/textures/Menorca_color.tga");
 	map->material = map_material;
 
 	//Clouds
-	SceneNode * cloud = new SceneNode("Rendered node");
+	SceneNode * cloud = new SceneNode("Rendered Cloud");
 	root.push_back(cloud);
 	Mesh * mesh_cloud = new Mesh();
 	mesh_cloud = Mesh::Get("data/meshes/cloud.obj");
 	cloud->mesh = mesh_cloud;
-	cloud->model.setScale(0.1, 0.1, 0.1);
+	cloud->model.setScale2(0.005, 0.005, 0.005);
+	cloud->model.setTranslation2(60.0, 8.5, 33.0);
 	CloudMaterial * material_cloud = new CloudMaterial();
 	cloud->material = material_cloud;
 	cloud->material->time = 0.0f;
@@ -149,9 +153,12 @@ void Application::render(void)
 	//Iterate over all nodes
 	for (int i = 0; i < size(root); i++) {
 		root[4]->material->time = time;
-		std::cout << root[4]->material->time << std::endl;
+
 		if (i == volume_index - 1) //When node index == keyboard number (between 1, 2, 3 and 4) render the node
 		{
+			root[i]->material->jittering = render_jittering;
+			root[i]->material->gradient = render_gradient;
+
 			root[i]->render(camera);
 
 			if (render_wireframe)

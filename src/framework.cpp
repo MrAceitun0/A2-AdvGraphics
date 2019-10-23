@@ -268,10 +268,24 @@ void Matrix44::setScale(float x, float y, float z)
 	m[10] = z;
 }
 
+void Matrix44::setScale2(float x, float y, float z)
+{
+	m[0] = x;
+	m[5] = y;
+	m[10] = z;
+}
+
 //To create a traslation matrix
 void Matrix44::setTranslation(float x, float y, float z)
 {
 	setIdentity();
+	m[12] = x;
+	m[13] = y;
+	m[14] = z;
+}
+
+void Matrix44::setTranslation2(float x, float y, float z)
+{
 	m[12] = x;
 	m[13] = y;
 	m[14] = z;

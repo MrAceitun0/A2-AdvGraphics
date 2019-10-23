@@ -8,17 +8,32 @@
 #include "extra/hdre.h"
 #include "volume.h"
 
+class My_Light;
+
 class Material {
 public:
 
 	Shader* shader = NULL;
 	Texture* texture = NULL;
+	Texture* beauty = NULL;
 	Volume* volume = NULL;
+	bool jittering = false;
+	bool gradient = false;
 	vec4 color;
+
 	float time = 0.0f;
 	float brightness;
 	float quality = 0.01;
 	int index;
+
+	My_Light* phong_light = NULL;
+
+	Vector3 phong_light_color = { 1.0, 0.8, 0.0 };
+
+	Vector3 ambient; //reflected ambient light
+	Vector3 diffuse; //reflected diffuse light
+	Vector3 specular; //reflected specular light
+	float shininess; //glosiness coefficient (plasticity)
 
 	virtual void setUniforms(Camera* camera, Matrix44 model) = 0;
 	virtual void render(Mesh* mesh, Matrix44 model, Camera * camera) = 0;
@@ -74,4 +89,16 @@ public:
 	void render(Mesh* mesh, Matrix44 model, Camera * camera);
 	void renderInMenu();
 };
+
+class My_Light
+{
+public:
+
+	Vector3 position;
+	Vector3 diffuse_color;
+	Vector3 specular_color;
+
+	My_Light();
+};
+
 #endif
