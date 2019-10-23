@@ -6,12 +6,12 @@ varying vec2 v_uv;
 varying vec4 v_color;
 
 uniform vec4 u_color;
-uniform sampler2D u_texture;
+uniform sampler2D u_texture_beauty;
 uniform float u_time;
 
 void main()
 {
 	vec2 uv = v_uv;
-	gl_FragColor = texture2D( u_texture, uv );
+	gl_FragColor = texture2D( u_texture_beauty, uv );
 	// gl_FragColor *= gl_FragColor.a;
 }

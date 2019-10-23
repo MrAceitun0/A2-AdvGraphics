@@ -39,10 +39,9 @@ void main()
 				- texture2D(u_texture, vec3(current_sample_norm.x, current_sample_norm.y, current_sample_norm.z - u_quality));
 
         vec3 gradient = (1.0 / (2.0 * u_quality)) * vec3(d1, d2, d3);
-        vec4 gradient4 = vec4(gradient.x, gradient.y, gradient.z, 1.0);
 
         //operations for the color
-        vec4 color_i = gradient4;   //color sample
+        vec4 color_i = u_color;   //color sample
         color_i = vec4(u_color.xyz, color_i.x);
         color_i.rgb = color_i.rgb * color_i.a;
         color_acc = length(step_vector) * color_i * (1.0 - color_acc.a) + color_acc;

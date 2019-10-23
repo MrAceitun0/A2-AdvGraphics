@@ -2,6 +2,22 @@
 precision mediump float;
 #endif
 
+varying vec3 v_wPos;
+varying vec3 v_wNormal;
+varying vec3 v_pos;
+
+uniform vec3 u_camera_position;
+
+uniform vec3 ambient_light;
+uniform vec3 light_color;
+uniform vec3 light_pos;
+
+uniform vec3 material_ambient;
+uniform vec3 material_diffuse;
+uniform vec3 material_specular;
+uniform float material_gloss;
+
+
 uniform vec2 u_resolution = vec2(100.0, 100.0);
 uniform vec2 u_mouse;
 uniform float u_time;
@@ -54,5 +70,16 @@ void main() {
     vec3 color = vec3(0.0);
     color += fbm(st*3.0  + 0.1 * u_time);
 
-    gl_FragColor = vec4(color,1.0);
+
+    //here we set up the normal as a color to see them as a debug
+	vec3 N = normalize(v_wNormal);
+	//vec3 uv = v_coord;
+	vec3 L = normalize( light_pos - v_wPos );
+	vec3 E = normalize( u_camera_position - v_wPos );
+	vec3 R = normalize( reflect(E,N) );
+	float NdotL = max(0.0, dot(N,L));
+	float RdotL = pow( max(0.0, dot(-R,L)), material_gloss );
+
+
+    gl_FragColor = vec4( color * ambient_light * material_ambient + material_diffuse * light_color * NdotL + material_specular * light_color * RdotL, 1.0);
 }
